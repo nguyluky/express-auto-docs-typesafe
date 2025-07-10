@@ -1,0 +1,10 @@
+{
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "path-intellisense.mappings": {
+        "@utils": "${workspaceRoot}/src/utils",
+        "@lib": "${workspaceRoot}/src/lib"
+    },
+
+    "typescript.tsdk": "node_modules/typescript/lib"
+}
+

@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator zod {
+  provider       = "zod-prisma-types"
+}
+
+model ds_mon {
+  id             String           @id @db.VarChar(50)
+  display_name   String?          @db.VarChar(200)
+  ds_nhom_hoc    ds_nhom_hoc[]
+  exchange_posts exchange_posts[]
+  ds_mon_theo_nam ds_mon_theo_nam[]
+}
+
+model ds_mon_theo_nam {
+    year     String  @db.VarChar(10)
+    semester Int
+    ma_mon   String  @db.VarChar(50)
+    ds_mon   ds_mon  @relation(fields: [ma_mon], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ds_mon_theo_nam_ibfk_1")
+
+    @@id([ma_mon, year, semester])
+}
+
+model ds_nhom_hoc {
+  id_to_hoc String  @id @db.VarChar(25)
+  ma_mon    String  @db.VarChar(50)
+  so_tc     Int
+  nhom      String? @db.VarChar(10)
+  nam       String? @db.VarChar(10)
+  tkb_map   BigInt?
+  ds_mon    ds_mon  @relation(fields: [ma_mon], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ds_nhom_hoc_ibfk_1")
+
+  @@index([ma_mon], map: "ma_mon")
+}
+
+model exchange_posts {
+  id              Int       @id @default(autoincrement())
+  id_mon          String    @db.VarChar(50)
+  current_section String    @db.VarChar(25)
+  desired_section String    @db.VarChar(25)
+  description     String    @db.Text
+  author          Int
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
+  deleted_at      DateTime? @db.Timestamp(0)
+  is_active       Boolean?  @default(true)
+  user            user      @relation(fields: [author], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "exchange_posts_ibfk_1")
+  ds_mon          ds_mon    @relation(fields: [id_mon], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "exchange_posts_ibfk_2")
+
+  @@index([author], map: "author")
+  @@index([id_mon], map: "id_mon")
+}
+
+model user {
+  id             Int              @id @default(autoincrement())
+  username       String           @unique(map: "username") @db.VarChar(50)
+  password       String           @db.VarChar(255)
+  email          String           @unique(map: "email") @db.VarChar(100)
+
+  two_factor_secret String?       @db.Text
+  created_at     DateTime?        @default(now()) @db.Timestamp(0)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(0)
+  deleted_at     DateTime?        @db.Timestamp(0)
+  is_active      Boolean?         @default(true)
+  exchange_posts exchange_posts[]
+}
