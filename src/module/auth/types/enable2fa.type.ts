@@ -4,7 +4,6 @@ import { user } from "@prisma/client";
 import { Request, Response } from "express"
 import * as z from 'zod/v4'
 
-
 export @ApiRequestStatus({
     statusCode: 200,
     statusMess: "Success"

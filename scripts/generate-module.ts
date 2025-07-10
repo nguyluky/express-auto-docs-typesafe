@@ -8,6 +8,10 @@ if (!moduleName) {
   process.exit(1);
 }
 
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const baseDir = path.resolve(__dirname, '../src/module', moduleName);
 const typesDir = path.join(baseDir, 'types');
 
@@ -18,55 +22,49 @@ if (fs.existsSync(baseDir)) {
 
 fs.mkdirSync(typesDir, { recursive: true });
 
-// Controller
+// Controller file
 fs.writeFileSync(
   path.join(baseDir, 'controller.ts'),
-  `import { Request, Response } from 'express';
-import * as Service from './service';
+  `import { Get, Post } from "@lib/httpMethod";
+import * as ${capitalize(moduleName)}Types from "./types/${moduleName}.type";
+import prisma from "config/prisma.config";
+import { Validate } from "@lib/validate";
 
-class ${capitalize(moduleName)}Controller {
-  // @Get()
-  async get(req: Request, res: Response) {
-    // ...
-  }
-  // @Post()
-  async create(req: Request, res: Response) {
-    // ...
-  }
+export default class ${capitalize(moduleName)}Controller {
+    @Get("/")
+    @Validate(${capitalize(moduleName)}Types.GetAllSchema)
+    async getAll(req: ${capitalize(moduleName)}Types.GetAllReq) {
+        // Gọi service, xử lý logic
+        return await Service.getAll(req);
+    }
+
+    @Get("/:id")
+    @Validate(${capitalize(moduleName)}Types.GetByIdSchema)
+    async getById(req: ${capitalize(moduleName)}Types.GetByIdReq) {
+        // Gọi service, xử lý logic
+        return await Service.getById(req);
+    }
 }
-
-export default new ${capitalize(moduleName)}Controller();
 `
 );
 
-// Service
+// Service file
 fs.writeFileSync(
   path.join(baseDir, 'service.ts'),
-  `export async function get() {
-  // ...
+  `import prisma from "config/prisma.config";
+import * as ${capitalize(moduleName)}Types from "./types/${moduleName}.type";
+
+export async function getAll(req: ${capitalize(moduleName)}Types.GetAllReq) {
+    // TODO: Logic query DB với req.query
+    return [];
 }
 
-export async function create() {
-  // ...
+export async function getById(req: ${capitalize(moduleName)}Types.GetByIdReq) {
+    // TODO: Logic query DB với req.params
+    return null;
 }
 `
 );
 
-// Types Example
-fs.writeFileSync(
-  path.join(typesDir, `${moduleName}.type.ts`),
-  `import { z } from 'zod';
 
-export const ${moduleName}Schema = z.object({
-  // ...fields
-});
-
-export type ${capitalize(moduleName)}Type = z.infer<typeof ${moduleName}Schema>;
-`
-);
-
-console.log(`Module ${moduleName} đã được tạo.`);
-
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+console.log(`Module "${moduleName}" đã được tạo chuẩn!`);
