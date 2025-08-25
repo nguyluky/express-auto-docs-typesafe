@@ -8,8 +8,18 @@ export const HTTP_RESP_KEY = "__http_resp"
 export interface HttpInfo {
     path: string,
     method: 'get' | 'post' | 'delete' | 'put' | 'use',
-    data?: any
+    data?: HttpInfoData
 }
+
+
+interface HttpInfoData {
+    middlewares?: any[],
+    isAuth?: boolean,
+    tags?: string[],
+    summary?: string,
+    description?: string
+}
+
 
 export const Get = (path?: string) => {
     return function (target: any, propertyKey: PropertyKey) {
@@ -55,12 +65,36 @@ export const Use = (path?: string) => {
     }
 }
 
+export const Middleware = (middleware: any) => {
+    return function (target: any, propertyKey: PropertyKey) {
+        const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
+        data.data = data.data || {};
+        if (!data.data.middlewares) {
+            data.data.middlewares = [];
+        }
+        if (typeof middleware === 'function') {
+            data.data.middlewares.push(middleware);
+        } else {
+            throw new BadRequestError("Middleware must be a function");
+        }
+        Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
+    }
+}
 
 export const IsAuth = () => {
     return function (target: any, propertyKey: PropertyKey) {
         const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
         data.data = data.data || {};
         data.data.isAuth = true;
+        Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
+    }
+}
+
+export const Tags = (tags: string[]) => {
+    return function (target: any, propertyKey: PropertyKey) {
+        const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
+        data.data = data.data || {};
+        data.data.tags = tags;
         Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
     }
 }
@@ -76,4 +110,21 @@ export const ApiRequestStatus = (respData: RespData) => {
     }
 }
 
+export const Summary = (summary: string) => {
+    return function (target: any, propertyKey: PropertyKey) {
+        const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
+        data.data = data.data || {};
+        data.data.summary = summary;
+        Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
+    }
+}
+
+export const Description = (description: string) => {
+    return function (target: any, propertyKey: PropertyKey) {
+        const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
+        data.data = data.data || {};
+        data.data.description = description;
+        Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
+    }
+}
 

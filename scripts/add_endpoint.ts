@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
 
+if (process.argv.length < 4) {
+    console.error("Usage: npx ts-node add_endpoint.ts <module> <EndpointName>");
+    process.exit(1);
+}
 const [,, moduleName, endpointName] = process.argv;
 if (!moduleName || !endpointName) {
   console.error("Usage: npx ts-node add_endpoint.ts <module> <EndpointName>");

@@ -10,14 +10,6 @@ export const SCHEMA_RES_KEY = "res_schema_key"
 type Class_ = new () => any
 
 
-export function toDataClass<T>(class_: new () => T) {
-    return (data: T) => {
-        const obj = new class_();
-        // @ts-ignore
-        Object.assign(obj, data)
-        return obj
-    }
-}
 export class HttpResp<T = any> {
     constructor(data: Partial<T>) {
         console.log(Object.keys(data))

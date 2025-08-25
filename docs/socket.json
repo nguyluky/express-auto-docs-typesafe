@@ -1,0 +1,214 @@
+{
+  "namespaces": {
+    "/chat": {
+      "description": "Real-time chat functionality",
+      "auth": [
+        {
+          "type": "http",
+          "description": "JWT Authentication Scheme",
+          "scheme": "bearer"
+        }
+      ],
+      "events": {
+        "SendMessage": {
+          "direction": "client-to-server",
+          "description": "Send a message to another user",
+          "requestSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "recipientId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "message",
+              "recipientId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "NewMessage": {
+          "direction": "server-to-client",
+          "description": "New message received from another user",
+          "responseSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "senderId": {
+                "type": "string"
+              },
+              "recipientId": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "senderId",
+              "recipientId",
+              "message",
+              "timestamp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ReadMessage": {
+          "direction": "client-to-server",
+          "description": "Mark a message as read",
+          "requestSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "messageId"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "description": "Real-time notifications system",
+      "auth": [
+        {
+          "type": "http",
+          "description": "JWT Authentication Scheme",
+          "scheme": "bearer"
+        }
+      ],
+      "events": {
+        "NewNotification": {
+          "direction": "server-to-client",
+          "description": "Send notification to specific user",
+          "responseSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "userId": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "data": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "userId",
+              "type",
+              "message",
+              "timestamp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "SystemAlert": {
+          "direction": "server-to-client",
+          "description": "System-wide alert message",
+          "responseSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "level": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error"
+                ]
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "message",
+              "level",
+              "timestamp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "UserMentioned": {
+          "direction": "server-to-client",
+          "description": "User was mentioned in a post or comment",
+          "responseSchema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+              "userId": {
+                "type": "string"
+              },
+              "mentionedBy": {
+                "type": "string"
+              },
+              "postId": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "userId",
+              "mentionedBy",
+              "postId",
+              "message",
+              "timestamp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "UserOnline": {
+          "direction": "server-to-client",
+          "description": "Notify when a user comes online",
+          "responseSchema": null
+        }
+      }
+    }
+  },
+  "name": "socket",
+  "servers": [
+    {
+      "url": "ws://localhost:3000",
+      "description": "Local Socket Server"
+    }
+  ]
+}

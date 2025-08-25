@@ -1,6 +1,16 @@
 import * as ts from 'typescript';
 
-export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
+
+// Helper: lấy danh sách tên parameters của function/method
+function getParamNames(node: ts.FunctionLikeDeclarationBase): Set<string> {
+    return new Set(
+        node.parameters
+            .filter(p => ts.isIdentifier(p.name))
+            .map(p => (p.name as ts.Identifier).text)
+    );
+}
+
+export function addReflectErrorForClass(): ts.TransformerFactory<ts.SourceFile> {
     return (context: ts.TransformationContext) => {
         return (sourceFile: ts.SourceFile) => {
             // Lưu trữ thông tin exceptions cho mỗi phương thức trong class
@@ -10,6 +20,15 @@ export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
 
             // Hàm helper để thu thập throw new Error hoặc class lỗi tùy chỉnh
             function collectExceptions(node: ts.Node, methodKey: string | undefined) {
+                if (
+                    (ts.isFunctionExpression(node) || ts.isArrowFunction(node)) &&
+                    node.parent &&
+                    ts.isCallExpression(node.parent) &&
+                    node.parent.arguments.some(arg => arg === node)
+                ) {
+                    return;
+                }
+
                 if (
                     ts.isThrowStatement(node) &&
                     ts.isNewExpression(node.expression) &&
@@ -52,6 +71,8 @@ export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
                         if (ts.isMethodDeclaration(member) && member.name) {
                             const methodName = member.name.getText();
                             const methodKey = `${node.name?.text || 'AnonymousClass'}.${methodName}`;
+                            const paramNames = getParamNames(member);
+
 
                             // Thu thập exceptions trong phương thức
                             ts.forEachChild(member, (child) => collectExceptions(child, methodKey));
@@ -71,6 +92,9 @@ export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
                             // Thêm exceptions từ function calls với spread syntax
                             if (functionCalls && Object.keys(functionCalls).length > 0) {
                                 Object.entries(functionCalls).forEach(([funcName, funcIdentifier]) => {
+                                    if (paramNames.has(funcName)) {
+                                        return;
+                                    }
                                     // Tạo expression: ...(fn.exception || [])
                                     const spreadExpression = ts.factory.createSpreadElement(
                                         ts.factory.createBinaryExpression(
@@ -91,7 +115,7 @@ export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
                                 const exceptionArray = ts.factory.createArrayLiteralExpression(
                                     exceptionArrayElements
                                 );
-                                
+
                                 const decorator = ts.factory.createDecorator(
                                     ts.factory.createCallExpression(
                                         ts.factory.createPropertyAccessExpression(
@@ -105,11 +129,11 @@ export function customTransformer(): ts.TransformerFactory<ts.SourceFile> {
                                         ]
                                     )
                                 );
-                                
+
                                 const updatedModifiers = member.modifiers
                                     ? [...member.modifiers, decorator]
                                     : [decorator];
-                                    
+
                                 return ts.factory.updateMethodDeclaration(
                                     member,
                                     updatedModifiers,
@@ -175,7 +199,7 @@ export function addReflectMetadataImport(context: ts.TransformationContext) {
     };
 }
 
-export function customTransformer2(): ts.TransformerFactory<ts.SourceFile> {
+export function addErrorMap(): ts.TransformerFactory<ts.SourceFile> {
     return (context: ts.TransformationContext) => {
         return (sourceFile: ts.SourceFile) => {
             // Lưu trữ thông tin exceptions cho mỗi function
@@ -184,7 +208,16 @@ export function customTransformer2(): ts.TransformerFactory<ts.SourceFile> {
             const additionalStatements: ts.Statement[] = [];
 
             // Hàm helper để thu thập throw new Error hoặc class lỗi tùy chỉnh
-            function collectExceptions(node: ts.Node, functionKey: string | undefined) {
+            function collectExceptions(node: ts.Node, functionKey: string | undefined, paramNames?: Set<string>) {
+                if (
+                    (ts.isFunctionExpression(node) || ts.isArrowFunction(node)) &&
+                    node.parent &&
+                    ts.isCallExpression(node.parent) &&
+                    node.parent.arguments.some(arg => arg === node)
+                ) {
+                    return;
+                }
+
                 if (
                     ts.isThrowStatement(node) &&
                     ts.isNewExpression(node.expression) &&
@@ -192,7 +225,8 @@ export function customTransformer2(): ts.TransformerFactory<ts.SourceFile> {
                     node.expression.expression.text.includes('Error') // Chỉ lấy các class lỗi (như Error, TypeError, CustomError)
                 ) {
                     const errorClass = node.expression.expression;
-                    if (functionKey) {
+                    if (functionKey && (!paramNames || !paramNames.has(errorClass.text))) {
+
                         if (!functionExceptions.has(functionKey)) {
                             functionExceptions.set(functionKey, {});
                         }
@@ -209,9 +243,10 @@ export function customTransformer2(): ts.TransformerFactory<ts.SourceFile> {
                 if (ts.isFunctionDeclaration(node) && node.name) {
                     const functionName = node.name.text;
                     const functionKey = functionName;
+                    const paramNames = getParamNames(node);
 
                     // Thu thập exceptions trong function
-                    ts.forEachChild(node, (child) => collectExceptions(child, functionKey));
+                    ts.forEachChild(node, (child) => collectExceptions(child, functionKey, paramNames));
 
                     // Thêm property .exception vào function
                     const exceptions = functionExceptions.get(functionKey);
@@ -283,13 +318,13 @@ export function customTransformer2(): ts.TransformerFactory<ts.SourceFile> {
 
             // Áp dụng visitor để xử lý toàn bộ file
             const transformedSourceFile = ts.visitNode(sourceFile, visitor) as ts.SourceFile;
-            
+
             // Thêm các assignment statements vào cuối file
             const updatedStatements = [
                 ...transformedSourceFile.statements,
                 ...additionalStatements
             ];
-            
+
             return ts.factory.updateSourceFile(transformedSourceFile, updatedStatements);
         };
     };
@@ -300,13 +335,13 @@ export function combineTransformers(): ts.TransformerFactory<ts.SourceFile> {
     return (context: ts.TransformationContext) => {
         return (sourceFile: ts.SourceFile) => {
             // Áp dụng customTransformer trước (cho class methods)
-            const transformer1 = customTransformer()(context);
+            const transformer1 = addReflectErrorForClass()(context);
             const result1 = transformer1(sourceFile);
-            
+
             // Sau đó áp dụng customTransformer2 (cho functions bên ngoài class)
-            const transformer2 = customTransformer2()(context);
+            const transformer2 = addErrorMap()(context);
             const result2 = transformer2(result1);
-            
+
             return result2;
         };
     };

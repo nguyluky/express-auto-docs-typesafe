@@ -1,10 +1,35 @@
 import { Router } from "express"
 
-const swagger = {
+
+const description = `
+A simple tiktok clone API
+
+# Sokket.io is used for real-time features like chats, notifications
+
+## chats real-time: ws://localhost:3000/chat?token=<your_token>
+
+### Client -> Server:
+- **Event name**: \`SendMessage\`
+- **Data**: \`{ recipientId: string, message: string }\`
+
+### Server -> Client:
+- **Event name**: \`NewMessage\`
+- **Data**: \`{ senderId: string, recipientId: string, message: string }\`
+
+
+## Notifications real-time: ws://localhost:3000/notifications?token=<your_token>
+### Server -> Client:
+- **Event name**: \`NewNotification\`
+- **Data**: \`{ userId: string, message: string }\`
+
+`
+
+
+export const swagger = {
     "openapi": "3.0.3",
     "info": {
-        "title": "Course Swapping API",
-        "description": "API for a third-party course swapping platform for Saigon University students.",
+        "title": "tiktok clone",
+        "description": description,
         "version": "1.0.0"
     },
     "servers": [
@@ -13,7 +38,7 @@ const swagger = {
             "description": "Local development server"
         },
         {
-            "url": "https://course-swap.example.com",
+            "url": "https://test.tkbsgusort.id.vn",
             "description": "Production server"
         }
     ],
@@ -28,13 +53,5 @@ const swagger = {
     },
     paths: {
     }
-}
-
-
-export function makeSwagger(router: Router) {
-    const paths = (router as any).swagger as Object | {};
-
-    const newSwagger = {...swagger, paths: paths}
-    return newSwagger;
 }
 

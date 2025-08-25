@@ -74,6 +74,7 @@ const logger = winston.createLogger({
     transports: transportArray,
 })
 
+const defaultLogger = logger.child({ module_name: 'default' });
 
 export class Logger {
     private _module_name: string = 'default';
@@ -107,4 +108,27 @@ export class Logger {
     error(message: LogMessage, context?: LogContext) {
         this.log(LogLevel.ERROR, message, context);
     }
+
+
+    static info(message: LogMessage, context?: LogContext) {
+        defaultLogger.info(message, context);
+    }
+
+    static log(level: LogLevel, message: LogMessage, context?: LogContext) {
+        defaultLogger.log(level, message, context);
+    }
+
+    static debug(message: LogMessage, context?: LogContext) {
+        defaultLogger.debug(message, context);
+    }
+
+    static warn(message: LogMessage, context?: LogContext) {
+        defaultLogger.warn(message, context);
+    }
+
+    static error(message: LogMessage, context?: LogContext) {
+        defaultLogger.error(message, context);
+    }
 }
+
+// default logger instance for convenience

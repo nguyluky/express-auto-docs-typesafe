@@ -31,10 +31,12 @@ export const generateAccessToken = (user: user) => {
     return token;
 }
 
+
+export type accessTokenPayload = {    user: Omit<user, 'password' | 'two_factor_secret'> };
 export const verifyAccessToken = (token: string) => {
     try {
         const decoded = jwt.verify(token, env.JWT_SECRET);
-        return decoded as { user: Omit<user, 'password' | 'two_factor_secret'> };
+        return decoded as accessTokenPayload;
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             throw new TokenTimeoutError();
@@ -71,7 +73,7 @@ export const verifyRefreshToken = (token: string) => {
 }
 
 export const generateEmailToken = (userid: string) => {
-    const token = jwt.sign({userid}, env.EMIAL_SECRET, {
+    const token = jwt.sign({userid}, env.EMAIL_SECRET, {
         expiresIn: "1h"
     })
 
@@ -82,7 +84,7 @@ export const generateEmailToken = (userid: string) => {
 
 export const verifyEmailToken = (token: string) => {
     try {
-        const decoded = jwt.verify(token, env.EMIAL_SECRET)
+        const decoded = jwt.verify(token, env.EMAIL_SECRET)
         return decoded as {userid: string}
 
     } catch (error) {
