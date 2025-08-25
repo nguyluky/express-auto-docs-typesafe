@@ -1,6 +1,7 @@
-import "reflect-metadata";
+
 import { ApiRequestStatus } from "@lib/httpMethod";
 import { Request } from "express";
+import "reflect-metadata";
 
 export class getTestWithAuthReqBody {}
 export class getTestWithAuthReqQuery {}

@@ -1,4 +1,3 @@
-import { Router } from "express"
 
 
 const description = `
@@ -33,22 +32,9 @@ export const swagger = {
         "version": "1.0.0"
     },
     "servers": [
-        {
-            "url": "http://localhost:3000",
-            "description": "Local development server"
-        },
-        {
-            "url": "https://test.tkbsgusort.id.vn",
-            "description": "Production server"
-        }
     ],
     "components": {
         "securitySchemes": {
-            "BearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            }
         },
     },
     paths: {

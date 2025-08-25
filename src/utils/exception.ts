@@ -1,3 +1,4 @@
+
 import { ApiRequestStatus } from "@lib/httpMethod";
 import * as z from "zod/v4";
 
@@ -14,88 +15,81 @@ class ApiError extends Error {
     }
 }
 
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 401,
     statusMess: "Token has expired"
 })
-export class TokenTimeoutError extends ApiError {
+class TokenTimeoutError extends ApiError {
     constructor() {
         super("Token has expired", 401);
         this.name = "TokenTimeoutError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 401,
     statusMess: "Token verification failed"
 })
-export class TokenVerificationError extends ApiError {
+class TokenVerificationError extends ApiError {
     constructor() {
         super("Token verification failed", 401);
         this.name = "TokenVerificationError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 404,
     statusMess: "Resource not found"
 })
-export class NotFoundError extends ApiError {
+class NotFoundError extends ApiError {
     constructor(message: string = "Resource not found") {
         super(message, 404);
         this.name = "NotFoundError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 400,
     statusMess: "Bad request"
 })
-export class BadRequestError extends ApiError {
+class BadRequestError extends ApiError {
     constructor(message: string = "Bad request") {
         super(message, 400);
         this.name = "BadRequestError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 401,
     statusMess: "Unauthorized"
 })
-export class UnauthorizedError extends ApiError {
+class UnauthorizedError extends ApiError {
     constructor(message: string = "Unauthorized") {
         super(message, 401);
         this.name = "UnauthorizedError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 403,
     statusMess: "Forbidden"
 })
-export class ForbiddenError extends ApiError {
+class ForbiddenError extends ApiError {
     constructor(message: string = "Forbidden") {
         super(message, 403);
         this.name = "ForbiddenError";
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 403,
     statusMess: "Conflict"
 })
-export class ConflictError extends ApiError {
+class ConflictError extends ApiError {
     constructor(message: string = "Conflict") {
         super(message, 403);
         this.name = "ConflictError"
     }
 }
-
-@ApiRequestStatus({
+export @ApiRequestStatus({
     statusCode: 400,
     statusMess: "Zod validation failed"
 })
-export class ZodBadRequestError extends ApiError {
+class ZodBadRequestError extends ApiError {
     constructor(error: z.ZodError) {
         super(JSON.stringify(z.treeifyError(error), null, 2), 400);
         this.name = "ZodBadRequestError";

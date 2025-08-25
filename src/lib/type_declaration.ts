@@ -1,8 +1,6 @@
 import "reflect-metadata";
 import * as z from "zod/v4";
 import { PropertyKey, wa } from "./PropertyKey";
-import { UnauthorizedError } from "@utils/exception";
-import { argv0 } from "process";
 
 // Khóa metadata cho schema
 const SCHEMA_METADATA_KEY = Symbol("schema");
@@ -73,6 +71,7 @@ interface EnumOptions {
 
 
 function addFormat(z_: z.ZodString, format: Formats) {
+    
 
     switch (format) {
         case Formats.email: return z_.email()
@@ -94,6 +93,7 @@ function addFormat(z_: z.ZodString, format: Formats) {
         case Formats["iso.datetime"]: return z_.datetime()
         case Formats["iso.duration"]: return z_.duration()
     }
+
     return z_;
 }
 
@@ -116,8 +116,8 @@ export function IsString(options: StringOptions = {}) {
         if (options.minLength !== undefined) schema = schema.min(options.minLength);
         if (options.maxLength !== undefined) schema = schema.max(options.maxLength);
         if (options.email) schema = schema.email();
-        if (options.optional) schema = schema.optional();
         if (options.format) schema = addFormat(schema, options.format);
+        if (options.optional) schema = schema.optional();
         Reflect.defineMetadata(SCHEMA_METADATA_KEY, schema, target, wa(propertyKey));
     };
 }

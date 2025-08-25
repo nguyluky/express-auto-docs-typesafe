@@ -1,4 +1,5 @@
-import { Description, Get, IsAuth, Summary } from "@lib/httpMethod";
+
+import { Description, Get, Summary } from "@lib/httpMethod";
 import { Validate } from "@lib/validate";
 import * as getTestType from "./types/getTest.type";
 import * as getTestWithAuthType from "./types/getTestWithAuth.type";
@@ -13,9 +14,9 @@ export default class TestController {
         return "hello world";
     }
 
-    @Get("/")
+    @Get()
     @Validate(getTestWithAuthType.schema)
-    @IsAuth()
+    
     @Summary("Test Endpoint with Auth")
     @Description("This is a test endpoint that requires authentication and returns a simple message.")
     async getTestWithAuth(req: getTestWithAuthType.Req) {

@@ -1,6 +1,7 @@
 import "reflect-metadata"
 import { PropertyKey, wa } from "./PropertyKey";
 import { BadRequestError } from "@utils/exception";
+import { SecurityScheme } from "./BaseAuth";
 
 export const HTTP_INFO_KEY = "__http_info"
 export const HTTP_RESP_KEY = "__http_resp"
@@ -11,15 +12,13 @@ export interface HttpInfo {
     data?: HttpInfoData
 }
 
-
 interface HttpInfoData {
     middlewares?: any[],
-    isAuth?: boolean,
+    isAuth?: (SecurityScheme)[],
     tags?: string[],
     summary?: string,
     description?: string
 }
-
 
 export const Get = (path?: string) => {
     return function (target: any, propertyKey: PropertyKey) {
@@ -81,11 +80,18 @@ export const Middleware = (middleware: any) => {
     }
 }
 
-export const IsAuth = () => {
+export const useAuth = (auth: SecurityScheme) => {
     return function (target: any, propertyKey: PropertyKey) {
         const data: HttpInfo = Reflect.getMetadata(HTTP_INFO_KEY, target, wa(propertyKey)) as HttpInfo || {};
         data.data = data.data || {};
-        data.data.isAuth = true;
+        if (!data.data.isAuth) {
+            data.data.isAuth = [];
+        }
+        if (auth instanceof SecurityScheme) {
+            data.data.isAuth.push(auth);
+        } else {
+            throw new Error("Auth must be an instance of SecurityScheme");
+        }
         Reflect.defineMetadata(HTTP_INFO_KEY, {...data}, target, wa(propertyKey));
     }
 }
